@@ -1,0 +1,26 @@
+server:
+  port: 80
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-request-size: 500MB
+      max-file-size: 500MB
+      file-size-threshold: 500MB
+  datasource:
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql:///netdisk?serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
+  thymeleaf:
+    cache: false
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    call-setters-on-nulls: true
+    auto-mapping-behavior: full
+    map-underscore-to-camel-case: true
+shiro:
+  loginUrl: /
+

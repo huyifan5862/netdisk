@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>我的网盘</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script type="text/javascript" src="/webjars/jquery/3.2.1/jquery.js"></script>
+    <script type="text/javascript" src="/webjars/vue/2.5.22/dist/vue.js"></script>
+    <script type="text/javascript" src="/webjars/vue-resource/1.5.1/dist/vue-resource.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/layui.css">
+    <script>
+        function upload() {
+            var file1 = $("#file")[0].files[0];
+            if(file1.size>524288000){
+                $("#msg").text("文件不能超过500M!");
+                $("#msg").css("color", "red");
+                return false;
+            }
+            if($("#file")[0].files[0]!=null) {
+                var fd = new FormData();
+                fd.append("file", $("#file")[0].files[0]);
+                $.ajax({
+                    url: "/file/upload",
+                    type: "POST",
+                    data: fd,
+                    async: true,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $("#upload").removeAttr("disabled");
+                        $("#msg").text("上传成功!");
+                        $("#msg").css("color", "green");
+                        vm.search()
+
+                    },
+                    beforeSend: function () {
+                        $("#upload").attr("disabled", "true");
+                        $("#msg").text("上传中!");
+                        $("#msg").css("color", "red");
+                    },
+                })
+            }
+
+        }
+    </script>
+</head>
+<body>
+<div style="padding-left: 200px;padding-top: 100px;padding-right: 200px" id="div1">
+    <button type="button" class="btn btn-primary"
+            data-toggle="button">创建文件夹
+    </button>
+    <button type="button" id="upload" onclick="$('#file').click();" class="btn btn-primary"
+            data-toggle="button">上传文件
+    </button>
+    <i id="msg" ></i>
+    <input name="file" type="file" onchange="upload(this)" style="display: none;" id="file">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>/</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="file in fileList">
+            <td>
+                <a href="#" v-if="file.isfile==0">
+                    <!--文件夹图标-->
+                    <span class="glyphicon glyphicon-folder-close"></span>
+                    {{file.frealname}}
+                </a>
+                <!--文件图标-->
+                <span v-if="file.isfile==1" class="glyphicon glyphicon-file" ></span>
+                <!--图片图标-->
+                <span v-if="file.isfile==2" class="glyphicon glyphicon-picture" ></span>
+                {{file.frealname}}
+            </td>
+            <td>{{file.fsize}}B</td>
+            <td><i class="layui-icon layui-icon-download-circle" @click="down(file.fname,file.frealname)"></i></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+<script>
+    var vm = new Vue({
+        el:"#div1",
+        data: {
+            fileList:""
+        },
+        mounted:function(){
+          this.search();
+        },
+        methods:{
+            search:function () {
+                this.$http.get("/file/search",
+                    {
+                        params: {
+                            path: "/"
+                        }
+                    }).then(function (rs) {
+                        this.fileList=rs.data;
+                })
+
+            },
+            down:function (fname,frealname) {
+                window.location.href="/file/down?fname="+fname+"&frealname="+frealname;
+            }
+        }
+    })
+</script>
+</html>
