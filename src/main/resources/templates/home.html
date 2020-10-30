@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <title>我的网盘</title>
     <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <script src="/jquery.min.js"></script>
+    <script src="/bootstrap.min.js"></script>
     <script type="text/javascript" src="/webjars/jquery/3.2.1/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.4.1/js/bootstrap.min.js">
     <script type="text/javascript" src="/webjars/vue/2.5.22/dist/vue.js"></script>
     <script type="text/javascript" src="/webjars/vue-resource/1.5.1/dist/vue-resource.js"></script>
     <link rel="stylesheet" type="text/css" href="/css/layui.css">
@@ -61,7 +65,7 @@
             <th>
                 <template v-for="(p,index) in paths">
                     <template v-for="(value,key) in p">
-                      <a href="javascript:void(0)" @click="topath(value)"> /{{key}}</a>
+                        <a href="javascript:void(0)" @click="topath(value)"> /{{key}}</a>
                     </template>
 
                 </template>
@@ -79,11 +83,17 @@
                 </a>
                 <!--文件图标-->
                 <span v-if="file.isfile==1" class="glyphicon glyphicon-file"></span>
-                <!--图片图标-->
-                <span v-if="file.isfile==2" class="glyphicon glyphicon-picture"></span>
-                <template v-if="file.isfile!=0">
+                <template v-if="file.isfile==1">
                     {{file.frealname}}
                 </template>
+                <!--图片图标-->
+                <a href="javascript:void(0)"   v-if="file.isfile==2" data-toggle="modal" data-target="#myModal"
+                   @click="img(file.fname,file.frealname)">
+                    <span class="glyphicon glyphicon-picture"></span>
+                    <template v-if="file.isfile==2">
+                        {{file.frealname}}
+                    </template>
+                </a>
             </td>
             <template v-if="file.isfile!=0">
                 <td>{{file.fsize}}B</td>
@@ -95,8 +105,30 @@
         </tr>
         </tbody>
     </table>
+
+    <input type="hidden" id="path" th:value="${session.path}">
+
+    <div class="modal fade" id="myModal" tabindex="-1"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="height: auto;width:auto">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">×
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        {{frealname}}
+                    </h4>
+                </div>
+                <img id="img1"  >
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default"
+                            data-dismiss="modal">关闭
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 </div>
-<input type="hidden" id="path" th:value="${session.path}" >
 </body>
 <script type="text/javascript" src="/js/layui.js" charset="utf-8"></script>
 <script>
@@ -104,7 +136,9 @@
         el: "#div1",
         data: {
             fileList: "",
-            paths:""
+            paths: "",
+            fname:"",
+            frealname:""
         },
         mounted: function () {
             this.search();
@@ -123,15 +157,22 @@
                 })
 
             },
-            topath:function(path){
+            topath: function (path) {
                 var path = $("#path").val(path)
                 this.search()
             },
             down: function (fname, frealname) {
                 window.location.href = "/file/down?fname=" + fname + "&frealname=" + frealname;
+            },
+            img: function (fname, frealname) {
+                this.fname = fname;
+                this.frealname = frealname;
+                $("#img1").attr("src","/file/img?fname="+fname)
             }
         }
     })
+
+
 </script>
 <script>
     layui.use('layer', function () { //独立版的layer无需执行这一句
