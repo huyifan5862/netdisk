@@ -22,4 +22,9 @@ public class FileServiceImpl implements FileService {
     public List<MyFile> selByPath(String path, int uid) {
         return fileMapper.selByPath(path,uid);
     }
+
+    @Override
+    public MyFile selPath(String ffatherpath, int uid) {
+        return fileMapper.selPath(ffatherpath,uid);
+    }
 }

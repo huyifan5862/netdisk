@@ -1,5 +1,6 @@
 package com.bobcfc.controller;
 
+import com.bobcfc.entity.Message;
 import com.bobcfc.entity.MyFile;
 import com.bobcfc.entity.User;
 import com.bobcfc.service.FileService;
@@ -13,10 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/file")
@@ -65,7 +63,7 @@ public class FileController {
         myFile.setFname(uuid);
         myFile.setFrealname(fileName);
         myFile.setUid(uid);
-        myFile.setFfatherpath("/");
+        myFile.setFfatherpath(path);
         myFile.setFsize(size);
         myFile.setFpath("D:\\netdisk");
         int i = fileService.saveFile(myFile);
@@ -85,6 +83,7 @@ public class FileController {
 
     }
 
+    @RequestMapping("/createPath")
     public Map createPath(String name, HttpSession session) {
         MyFile myFile = new MyFile();
         Subject subject = SecurityUtils.getSubject();
@@ -94,7 +93,8 @@ public class FileController {
         myFile.setFname(name);
         myFile.setFrealname(name);
         String path = (String) session.getAttribute("path");
-        myFile.setFfatherpath(path);
+        myFile.setFfatherpath("/root");
+        myFile.setFpath(path+"/"+name);
         int i = fileService.saveFile(myFile);
         Map map = new HashMap();
         String code = "";
@@ -114,14 +114,34 @@ public class FileController {
     }
 
     @RequestMapping("/search")
-    public List<MyFile> toPath(String path) {
-        System.out.println("path = " + path);
+    public Message toPath(String path,HttpSession session) {
+
         Subject subject = SecurityUtils.getSubject();
         User user = (User) subject.getPrincipal();
         int uid = user.getUid();
-        List<MyFile> myFiles = fileService.selByPath(path, uid);
+        System.out.println("path = " + path);
+        String path1 = path;
+        //获取所有父级目录
+        LinkedList<Map<String,String>> ll = new LinkedList<>();
+        while (!"/".equals(path)) {
+            Map map = new HashMap();
+            MyFile myFile = fileService.selPath(path,uid);
+            map.put(myFile.getFname(),myFile.getFpath());
+            ll.addFirst(map);
+            path = myFile.getFfatherpath();
+        }
 
-        return myFiles;
+
+        List<MyFile> myFiles = fileService.selByPath(path1, uid);
+        Message message = new Message();
+        message.setCode("200");
+        message.setMsg("查询成功!");
+        message.setPath(ll);
+        message.setData(myFiles);
+
+        session.setAttribute("path",path1);
+
+        return message;
 
     }
 
@@ -161,5 +181,6 @@ public class FileController {
         }
 
     }
+
 
 }

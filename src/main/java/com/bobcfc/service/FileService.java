@@ -7,4 +7,5 @@ import java.util.List;
 public interface FileService {
     int saveFile(MyFile file);
     List<MyFile> selByPath(String path,int uid);
+    MyFile selPath(String ffatherpath,int uid);
 }

@@ -10,5 +10,8 @@
     <select  id="selByPath" resultType="com.bobcfc.entity.MyFile">
         select * from file where uid=#{uid} and ffatherpath = #{path} order by isfile
     </select>
+    <select id="selPath" resultType="com.bobcfc.entity.MyFile">
+        select * from file where fpath = #{ffatherpath} and uid = #{uid}
+    </select>
 
 </mapper>

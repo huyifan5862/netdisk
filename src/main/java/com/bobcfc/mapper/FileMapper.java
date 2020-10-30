@@ -8,4 +8,5 @@ import java.util.List;
 public interface FileMapper {
     int saveFile(MyFile file);
     List<MyFile> selByPath(@Param("path") String path,@Param("uid") int uid);
+    MyFile selPath(String ffatherpath,int uid);
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +38,8 @@ public class UserController {
     }
 
     @RequestMapping("/tohome")
-    public String tohome(){
+    public String tohome(HttpSession session){
+        session.setAttribute("path","/root");
         return "home";
     }
 
