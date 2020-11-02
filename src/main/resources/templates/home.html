@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/bootstrap.min.css">
     <script src="/jquery.min.js"></script>
     <script src="/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/webjars/jquery/3.2.1/jquery.js"></script>
+    <script type="text/javascript" src="/webjars/jquery/3.4.1/jquery.js"></script>
     <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.4.1/js/bootstrap.min.js">
     <script type="text/javascript" src="/webjars/vue/2.5.22/dist/vue.js"></script>
     <script type="text/javascript" src="/webjars/vue-resource/1.5.1/dist/vue-resource.js"></script>
@@ -87,7 +87,8 @@
                     {{file.frealname}}
                 </template>
                 <!--图片图标-->
-                <a href="javascript:void(0)"   v-if="file.isfile==2" data-toggle="modal" data-target="#myModal"
+                <a href="javascript:void(0)" title="点击预览" v-if="file.isfile==2" data-toggle="modal"
+                   data-target="#myModal"
                    @click="img(file.fname,file.frealname)">
                     <span class="glyphicon glyphicon-picture"></span>
                     <template v-if="file.isfile==2">
@@ -96,20 +97,41 @@
                 </a>
             </td>
             <template v-if="file.isfile!=0">
+                <td>{{dateFilter(file.ftime)}}</td>
+            </template>
+            <template v-if="file.isfile==0">
+                <td></td>
+            </template>
+            <template v-if="file.isfile!=0">
                 <td>{{file.fsize}}B</td>
             </template>
             <template v-if="file.isfile==0">
                 <td></td>
             </template>
-            <td><i class="layui-icon layui-icon-download-circle" @click="down(file.fname,file.frealname)"></i></td>
+            <td v-if="file.isfile!=0"><i title="下载" class="layui-icon layui-icon-download-circle"
+                                         @click="down(file.fname,file.frealname)"></i>
+
+                <i title="分享" class="layui-icon layui-icon-share"></i>
+                <i title="删除" class="layui-icon layui-icon-delete" @click="del(file.fid)"></i>
+            </td>
+            <td v-if="file.isfile==0"></td>
         </tr>
         </tbody>
     </table>
+<!--    分页-->
+    <ul class="pagination">
 
+        <li v-if="currentpage==1" class="disabled"><a href="javascript:void(0)">&laquo;</a></li>
+        <li v-if="currentpage!=1"><a href="javascript:void(0)" @click="pre()">&laquo;</a></li>
+
+        <li :class="i==currentpage?'active':''" v-for="i in pagecount" ><a href="javascript:void(0)" @click="num(i)">{{i}}</a></li>
+        <li v-if="currentpage==pagecount" class="disabled"><a href="javascript:void(0)">&raquo;</a></li>
+        <li v-if="currentpage!=pagecount"><a href="javascript:void(0)" @click="next()">&raquo;</a></li>
+    </ul>
     <input type="hidden" id="path" th:value="${session.path}">
 
-    <div class="modal fade" id="myModal" tabindex="-1"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog" style="height: auto;width:auto">
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="height: auto;width:50%">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"
@@ -119,7 +141,9 @@
                         {{frealname}}
                     </h4>
                 </div>
-                <img id="img1"  >
+                <center>
+                    <img id="img1" width="500px">
+                </center>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default"
                             data-dismiss="modal">关闭
@@ -137,8 +161,10 @@
         data: {
             fileList: "",
             paths: "",
-            fname:"",
-            frealname:""
+            fname: "",
+            frealname: "",
+            currentpage:1,
+            pagecount:1
         },
         mounted: function () {
             this.search();
@@ -149,10 +175,13 @@
                 this.$http.get("/file/search",
                     {
                         params: {
-                            path: path
+                            path: path,
+                            currentpage:this.currentpage
                         }
                     }).then(function (rs) {
-                    this.fileList = rs.data.data;
+                    this.fileList = rs.data.data.list;
+                    this.currentpage = rs.data.data.pageNum;
+                    this.pagecount = rs.data.data.pages
                     this.paths = rs.data.path
                 })
 
@@ -167,7 +196,61 @@
             img: function (fname, frealname) {
                 this.fname = fname;
                 this.frealname = frealname;
-                $("#img1").attr("src","/file/img?fname="+fname)
+                $("#img1").attr("src", "/file/img?fname=" + fname)
+            },
+            dateFilter: function (input) {
+                var d = new Date(input);
+                var year = d.getFullYear();
+                var month = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : "" + (d.getMonth() + 1);
+                var day = d.getDate() < 10 ? "0" + d.getDate() : "" + d.getDate();
+                var hour = d.getHours() < 10 ? "0" + d.getHours() : "" + d.getHours();
+                var minutes = d.getMinutes() < 10 ? "0" + d.getMinutes() : "" + d.getMinutes();
+                var seconds = d.getSeconds() < 10 ? "0" + d.getSeconds() : "" + d.getSeconds();
+                return (year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":" + seconds);
+            },
+            del:function (fid) {
+                if(window.confirm("确认删除?")) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/file/del",
+                        data: {
+                            fid: fid
+                        },
+                        success: function (data) {
+                            alert(data.msg);
+                            vm.search()
+
+                        },
+                        error: function () {
+                            alert("网络异常!")
+
+                        }
+                    })
+                }
+
+            },
+            pre:function () {
+                if(this.currentpage>1){
+                    this.currentpage=this.currentpage-1;
+                    this.search();
+                }
+            },
+            next:function () {
+                if(this.currentpage<this.pagecount){
+                    this.currentpage=this.currentpage+1;
+                    this.search();
+                }
+            },
+            num:function (i) {
+                if(i<=1){
+                    this.currentpage=1;
+                }
+                else if(i>=this.pagecount){
+                    this.currentpage=this.pagecount;
+                }else{
+                    this.currentpage=i;
+                }
+                this.search();
             }
         }
     })

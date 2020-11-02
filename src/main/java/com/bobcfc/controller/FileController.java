@@ -4,10 +4,12 @@ import com.bobcfc.entity.Message;
 import com.bobcfc.entity.MyFile;
 import com.bobcfc.entity.User;
 import com.bobcfc.service.FileService;
+import com.github.pagehelper.PageInfo;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,6 +73,8 @@ public class FileController {
         myFile.setFfatherpath(path);
         myFile.setFsize(size);
         myFile.setFpath("D:\\netdisk");
+        Date date = new Date();
+        myFile.setFtime(date);
         int i = fileService.saveFile(myFile);
         String code = "";
         String msg = "";
@@ -119,8 +123,8 @@ public class FileController {
     }
 
     @RequestMapping("/search")
-    public Message toPath(String path,HttpSession session) {
-
+    public Message toPath(String path, @RequestParam(defaultValue = "1") int currentpage, HttpSession session) {
+        int pagesize=10;
         Subject subject = SecurityUtils.getSubject();
         User user = (User) subject.getPrincipal();
         int uid = user.getUid();
@@ -137,7 +141,7 @@ public class FileController {
         }
 
 
-        List<MyFile> myFiles = fileService.selByPath(path1, uid);
+        PageInfo<MyFile> myFiles = fileService.selByPath(path1, uid,currentpage,pagesize);
         Message message = new Message();
         message.setCode("200");
         message.setMsg("查询成功!");
@@ -194,5 +198,22 @@ public class FileController {
         inputStream.read(bytes, 0, inputStream.available());
         return bytes;
 
+    }
+
+    @RequestMapping("/del")
+    public Message delFile(int fid){
+        Subject subject = SecurityUtils.getSubject();
+        User user = (User)subject.getPrincipal();
+        int uid = user.getUid();
+        int i = fileService.delFile(fid, uid);
+        Message message = new Message();
+        if(i>0){
+            message.setCode("200");
+            message.setMsg("删除成功!");
+        }else{
+            message.setCode("500");
+            message.setMsg("网络异常!");
+        }
+        return message;
     }
 }
