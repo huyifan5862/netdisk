@@ -56,6 +56,10 @@
         <button type="button" id="upload" onclick="$('#file').click();" class="layui-btn layui-btn-normal"
                 data-toggle="button">上传文件
         </button>
+        <button id="btn" data-method="offset1" data-type="auto" style="display: none"
+                class="layui-btn layui-btn-normal">1
+        </button>
+
         <i id="msg"></i>
     </div>
     <input name="file" type="file" onchange="upload(this)" style="display: none;" id="file">
@@ -111,20 +115,21 @@
             <td v-if="file.isfile!=0"><i title="下载" class="layui-icon layui-icon-download-circle"
                                          @click="down(file.fname,file.frealname)"></i>
 
-                <i title="分享" class="layui-icon layui-icon-share"></i>
+                <i title="分享" class="layui-icon layui-icon-share" @click="sa(file.fname,file.frealname)"></i>
                 <i title="删除" class="layui-icon layui-icon-delete" @click="del(file.fid)"></i>
             </td>
             <td v-if="file.isfile==0"></td>
         </tr>
         </tbody>
     </table>
-<!--    分页-->
+    <!--    分页-->
     <ul class="pagination">
 
         <li v-if="currentpage==1" class="disabled"><a href="javascript:void(0)">&laquo;</a></li>
         <li v-if="currentpage!=1"><a href="javascript:void(0)" @click="pre()">&laquo;</a></li>
 
-        <li :class="i==currentpage?'active':''" v-for="i in pagecount" ><a href="javascript:void(0)" @click="num(i)">{{i}}</a></li>
+        <li :class="i==currentpage?'active':''" v-for="i in pagecount"><a href="javascript:void(0)" @click="num(i)">{{i}}</a>
+        </li>
         <li v-if="currentpage==pagecount" class="disabled"><a href="javascript:void(0)">&raquo;</a></li>
         <li v-if="currentpage!=pagecount"><a href="javascript:void(0)" @click="next()">&raquo;</a></li>
     </ul>
@@ -156,6 +161,12 @@
 </body>
 <script type="text/javascript" src="/js/layui.js" charset="utf-8"></script>
 <script>
+    function f() {
+
+        $("#link").text(vm.share.slink)
+        $("#pass").text(vm.share.spassword)
+
+    }
     var vm = new Vue({
         el: "#div1",
         data: {
@@ -163,20 +174,36 @@
             paths: "",
             fname: "",
             frealname: "",
-            currentpage:1,
-            pagecount:1
+            currentpage: 1,
+            pagecount: 1,
+            share: {}
         },
         mounted: function () {
             this.search();
         },
         methods: {
+            sa: function (fname,frealname) {
+                $.ajax({
+                    type: "POST",
+                    url:"/share",
+                    data: {
+                        fname:fname,
+                        frealname: frealname
+                    },
+                    success: function (data) {
+                        vm.share = data
+                        $("#btn").click()
+                    }
+                })
+
+            },
             search: function () {
                 var path = $("#path").val()
                 this.$http.get("/file/search",
                     {
                         params: {
                             path: path,
-                            currentpage:this.currentpage
+                            currentpage: this.currentpage
                         }
                     }).then(function (rs) {
                     this.fileList = rs.data.data.list;
@@ -208,8 +235,8 @@
                 var seconds = d.getSeconds() < 10 ? "0" + d.getSeconds() : "" + d.getSeconds();
                 return (year + "-" + month + "-" + day + " " + hour + ":" + minutes + ":" + seconds);
             },
-            del:function (fid) {
-                if(window.confirm("确认删除?")) {
+            del: function (fid) {
+                if (window.confirm("确认删除?")) {
                     $.ajax({
                         type: "POST",
                         url: "/file/del",
@@ -229,26 +256,25 @@
                 }
 
             },
-            pre:function () {
-                if(this.currentpage>1){
-                    this.currentpage=this.currentpage-1;
+            pre: function () {
+                if (this.currentpage > 1) {
+                    this.currentpage = this.currentpage - 1;
                     this.search();
                 }
             },
-            next:function () {
-                if(this.currentpage<this.pagecount){
-                    this.currentpage=this.currentpage+1;
+            next: function () {
+                if (this.currentpage < this.pagecount) {
+                    this.currentpage = this.currentpage + 1;
                     this.search();
                 }
             },
-            num:function (i) {
-                if(i<=1){
-                    this.currentpage=1;
-                }
-                else if(i>=this.pagecount){
-                    this.currentpage=this.pagecount;
-                }else{
-                    this.currentpage=i;
+            num: function (i) {
+                if (i <= 1) {
+                    this.currentpage = 1;
+                } else if (i >= this.pagecount) {
+                    this.currentpage = this.pagecount;
+                } else {
+                    this.currentpage = i;
                 }
                 this.search();
             }
@@ -263,35 +289,8 @@
 
         //触发事件
         var active = {
-            setTop: function () {
-                var that = this;
-                //多窗口模式，层叠置顶
-                layer.open({
-                    type: 2 //此处以iframe举例
-                    , title: '当你选择该窗体时，即会在最顶端'
-                    , area: ['390px', '260px']
-                    , shade: 0
-                    , maxmin: true
-                    , offset: [ //为了演示，随机坐标
-                        Math.random() * ($(window).height() - 300)
-                        , Math.random() * ($(window).width() - 390)
-                    ]
-                    , content: '//layer.layui.com/test/settop.html'
-                    , btn: ['继续弹出', '全部关闭'] //只是为了演示
-                    , yes: function () {
-                        $(that).click();
-                    }
-                    , btn2: function () {
-                        layer.closeAll();
-                    }
 
-                    , zIndex: layer.zIndex //重点1
-                    , success: function (layero) {
-                        layer.setTop(layero); //重点2
-                    }
-                });
-            }
-            , offset: function (othis) {
+              offset: function (othis) {
                 var type = othis.data('type')
                     , text = othis.text();
 
@@ -337,6 +336,32 @@
                                 }
                             }
                         })
+                    }
+                });
+            }
+            , offset1: function (othis) {
+                var type = othis.data('type')
+                    , text = othis.text();
+
+                layer.open({
+                    type: 1
+                    , title: "生成链接"
+                    , offset: type //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                    , id: 'layerDemo' + type //防止重复弹出
+                    , content: '<div style="padding: 20px 80px;">' +
+                        '<div class="layui-inline">\n' +
+                        '      <div class="layui-input-inline">\n' +
+                        '      <span id="link">链接: <a href="'+vm.share.slink+'">'+vm.share.slink+'</a></span><br>' +
+                        '      <span id="pass">密码: '+vm.share.spassword+'</span>' +
+                        '      </div>\n' +
+                        '       <span id="pathnamemsg"></span> ' +
+                        '    </div>' + '</div>'
+                    , btn: '确定'
+                    , btnAlign: 'c' //按钮居中
+                    , shade: 0 //不显示遮罩
+                    , area:'550px'
+                    , yes: function () {
+                        layer.closeAll()
 
 
                     }

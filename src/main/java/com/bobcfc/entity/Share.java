@@ -2,20 +2,20 @@ package com.bobcfc.entity;
 
 
 import lombok.Data;
-import lombok.ToString;
+
+import java.util.Date;
 
 @Data
-@ToString
 public class Share {
 
   private long sid;
+  private int uid;
   private String unick;
   private String fname;
   private String frealname;
   private String slink;
-  private String spassward;
-  private Data stime;
-  private Data sed;
-
+  private String spassword;
+  private Date stime;
+  private Date sed;
 
 }
