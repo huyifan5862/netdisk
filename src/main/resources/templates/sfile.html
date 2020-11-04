@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>我的网盘</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <script src="/jquery.min.js"></script>
+    <script src="/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/webjars/jquery/3.4.1/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.4.1/js/bootstrap.min.js">
+    <script type="text/javascript" src="/webjars/vue/2.5.22/dist/vue.js"></script>
+    <script type="text/javascript" src="/webjars/vue-resource/1.5.1/dist/vue-resource.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/layui.css">
+</head>
+<body>
+<center>
+    <div style="text-align: center;margin-top: 20%;width: 500px">
+        <!--文件图标-->
+        <span class="glyphicon glyphicon-file" th:if="${session.file.isfile==1}"></span>
+        <!--图片图标-->
+        <span class="glyphicon glyphicon-picture" th:if="${session.file.isfile==2}"></span>
+        <br>
+        <span th:text="${session.file.frealname}"></span>
+        <br><br>
+        <button type="button" id="btn" class="btn btn-default">保存</button>
+    </div>
+</center>
+</body>
+<script>
+    $("#btn").click(function () {
+        $.ajax({
+            type:"POST",
+            url:"/share/save",
+            success:function (data) {
+                alert(data.msg)
+            }
+        })
+
+    })
+</script>
+</html>

@@ -15,4 +15,9 @@ public class ShareServiceImpl implements ShareService {
 
         return shareMapper.insertShare(share);
     }
+
+    @Override
+    public Share selShare(String uuid) {
+        return shareMapper.selShare(uuid);
+    }
 }

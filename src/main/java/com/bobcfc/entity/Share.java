@@ -9,6 +9,8 @@ import java.util.Date;
 public class Share {
 
   private long sid;
+  private int fid;
+  private String uuid;
   private int uid;
   private String unick;
   private String fname;

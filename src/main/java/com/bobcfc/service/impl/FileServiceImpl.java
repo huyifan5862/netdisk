@@ -38,4 +38,9 @@ public class FileServiceImpl implements FileService {
     public int delFile(int fid, int uid) {
         return fileMapper.delFile(fid,uid);
     }
+
+    @Override
+    public MyFile selByFid(int fid) {
+        return fileMapper.selByFid(fid);
+    }
 }

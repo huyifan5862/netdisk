@@ -3,6 +3,7 @@ package com.bobcfc.mapper;
 import com.bobcfc.entity.MyFile;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -12,4 +13,7 @@ public interface FileMapper {
     MyFile selPath(@Param("ffatherpath") String ffatherpath, @Param("uid") int uid);
     @Delete("delete from file where fid=#{fid} and uid=#{uid}")
     int delFile(@Param("fid") int fid, int uid);
+    @Select("select * from file where fid=#{fid}")
+    MyFile selByFid(int fid);
+
 }

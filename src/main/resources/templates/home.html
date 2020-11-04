@@ -56,6 +56,11 @@
         <button type="button" id="upload" onclick="$('#file').click();" class="layui-btn layui-btn-normal"
                 data-toggle="button">上传文件
         </button>
+
+        <button data-method="offset2" data-type="auto" class="layui-btn layui-btn-normal">查看链接</button>
+
+
+
         <button id="btn" data-method="offset1" data-type="auto" style="display: none"
                 class="layui-btn layui-btn-normal">1
         </button>
@@ -115,7 +120,7 @@
             <td v-if="file.isfile!=0"><i title="下载" class="layui-icon layui-icon-download-circle"
                                          @click="down(file.fname,file.frealname)"></i>
 
-                <i title="分享" class="layui-icon layui-icon-share" @click="sa(file.fname,file.frealname)"></i>
+                <i title="分享" class="layui-icon layui-icon-share" @click="sa(file.fname,file.frealname,file.fid)"></i>
                 <i title="删除" class="layui-icon layui-icon-delete" @click="del(file.fid)"></i>
             </td>
             <td v-if="file.isfile==0"></td>
@@ -182,13 +187,14 @@
             this.search();
         },
         methods: {
-            sa: function (fname,frealname) {
+            sa: function (fname,frealname,fid) {
                 $.ajax({
                     type: "POST",
                     url:"/share",
                     data: {
                         fname:fname,
-                        frealname: frealname
+                        frealname: frealname,
+                        fid:fid
                     },
                     success: function (data) {
                         vm.share = data
@@ -364,6 +370,29 @@
                         layer.closeAll()
 
 
+                    }
+                });
+            }
+            ,offset2: function (othis) {
+                var type = othis.data('type')
+                    , text = othis.text();
+
+                layer.open({
+                    type: 1
+                    , title: "输入链接"
+                    , offset: type //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                    , id: 'layerDemo' + type //防止重复弹出
+                    , content: '<div style="padding: 20px 100px;">' + '<div class="layui-inline">\n' +
+                        '      <div class="layui-input-inline">\n' +
+                        '        <input type="text" name="link" id="link"  autocomplete="off" class="layui-input">\n' +
+                        '      </div>\n' +
+                        '       <span id="pathnamemsg"></span> ' +
+                        '    </div>' + '</div>'
+                    , btn: '确定'
+                    , btnAlign: 'c' //按钮居中
+                    , shade: 0 //不显示遮罩
+                    , yes: function () {
+                        window.location.href="http://"+$("#link").val()
                     }
                 });
             }
