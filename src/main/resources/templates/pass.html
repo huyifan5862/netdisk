@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>输入密码</title>
@@ -17,6 +17,7 @@
             <button type="button" id="btn" class="btn btn-default">确认</button>
         </div>
     </div>
+    <input type="hidden" th:value="${uuid}" id="uuid">
 </center>
 </body>
 <script>
@@ -30,11 +31,12 @@
             type:"POST",
             url:"/share/confirm",
             data:{
-                pass:pass
+                pass:pass,
+                uuid:$("#uuid").val()
             },
             success:function (data) {
                 if(data.code=='200'){
-                    window.location.href= "/share/sfile";
+                    window.location.href= "/share/sfile/"+data.msg;
                 }else{
                     alert("密码错误!");
                 }

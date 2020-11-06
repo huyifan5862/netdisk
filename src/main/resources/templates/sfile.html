@@ -17,21 +17,25 @@
 <center>
     <div style="text-align: center;margin-top: 20%;width: 500px">
         <!--文件图标-->
-        <span class="glyphicon glyphicon-file" th:if="${session.file.isfile==1}"></span>
+        <span class="glyphicon glyphicon-file" th:if="${file.isfile==1}"></span>
         <!--图片图标-->
-        <span class="glyphicon glyphicon-picture" th:if="${session.file.isfile==2}"></span>
+        <span class="glyphicon glyphicon-picture" th:if="${file.isfile==2}"></span>
         <br>
-        <span th:text="${session.file.frealname}"></span>
+        <span th:text="${file.frealname}"></span>
         <br><br>
         <button type="button" id="btn" class="btn btn-default">保存</button>
     </div>
 </center>
+<input type="hidden" th:value="${file.fid}" id="fid">
 </body>
 <script>
     $("#btn").click(function () {
         $.ajax({
             type:"POST",
             url:"/share/save",
+            data:{
+                fid:$("#fid").val()
+            },
             success:function (data) {
                 alert(data.msg)
             }

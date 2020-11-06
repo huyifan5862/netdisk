@@ -10,11 +10,11 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpSession;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -60,10 +60,10 @@ public class ShareController {
     }
 
     @RequestMapping("/share/{uuid}")
-    public String topass(@PathVariable("uuid") String uuid, HttpSession session){
+    public String topass(@PathVariable("uuid") String uuid, Model model){
         Share share = shareService.selShare(uuid);
         if(share!=null) {
-            session.setAttribute("share",share);
+            model.addAttribute("uuid",uuid);
             return "pass";
         }else {
             return "notfile";
@@ -71,29 +71,30 @@ public class ShareController {
     }
     @ResponseBody
     @RequestMapping("/share/confirm")
-    public Message confirm(String pass,HttpSession session){
-        Share share = (Share)session.getAttribute("share");
-        String spassword = share.getSpassword();
+    public Message confirm(String uuid,String pass){
+        Share share = shareService.selShare(uuid);
         Message message = new Message();
-        if(pass.equals(spassword)){
-            MyFile myFile = fileService.selByFid(share.getFid());
-            session.setAttribute("file",myFile);
+        if(share.getSpassword().equals(pass)){
             message.setCode("200");
+            message.setMsg(uuid);
         }else{
             message.setCode("500");
         }
         return message;
     }
 
-    @RequestMapping("/share/sfile")
-    public String file(){
+    @RequestMapping("/share/sfile/{uuid}")
+    public String file(@PathVariable("uuid")String uuid, Model model){
+        Share share = shareService.selShare(uuid);
+        MyFile myFile = fileService.selByFid(share.getFid());
+        model.addAttribute("file",myFile);
         return "sfile";
     }
 
     @ResponseBody
     @RequestMapping("/share/save")
-    public Message save(HttpSession session){
-        MyFile file = (MyFile) session.getAttribute("file");
+    public Message save(int fid){
+        MyFile file = fileService.selByFid(fid);
         Subject subject = SecurityUtils.getSubject();
         User user = (User)subject.getPrincipal();
         file.setUid(user.getUid());
